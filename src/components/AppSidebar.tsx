@@ -1,5 +1,5 @@
 
-import { Home, Send, ReceiveSquare, Activity, Settings } from "lucide-react";
+import { Home, Send, Inbox, Activity, Settings } from "lucide-react";
 import { useLocation, Link } from "react-router-dom";
 import {
   Sidebar,
@@ -15,7 +15,7 @@ import {
 const menuItems = [
   { title: "Dashboard", icon: Home, path: "/" },
   { title: "Send Power", icon: Send, path: "/send" },
-  { title: "Receive Power", icon: ReceiveSquare, path: "/receive" },
+  { title: "Receive Power", icon: Inbox, path: "/receive" },
   { title: "Activity", icon: Activity, path: "/activity" },
   { title: "Settings", icon: Settings, path: "/settings" },
 ];

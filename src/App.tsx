@@ -9,6 +9,8 @@ import Dashboard from "./pages/Dashboard";
 import Send from "./pages/Send";
 import Receive from "./pages/Receive";
 import NotFound from "./pages/NotFound";
+import Activity from "./pages/Activity";
+import Settings from "./pages/Settings";
 import { AppSidebar } from "./components/AppSidebar";
 
 const queryClient = new QueryClient();
@@ -27,6 +29,8 @@ const App = () => (
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/send" element={<Send />} />
                 <Route path="/receive" element={<Receive />} />
+                <Route path="/activity" element={<Activity />} />
+                <Route path="/settings" element={<Settings />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>

@@ -47,6 +47,7 @@ export function WalletSelector() {
   const { account, connected, disconnect, wallet } = useWallet();
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  console.log("WalletSelector: ", { account, connected, wallet, isDialogOpen });
 
   const closeDialog = useCallback(() => setIsDialogOpen(false), []);
 
@@ -96,7 +97,10 @@ export function WalletSelector() {
       </DropdownMenuContent>
     </DropdownMenu>
   ) : (
-    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+    <Dialog open={isDialogOpen} onOpenChange={(isOpen) => {
+      setIsDialogOpen(isOpen);
+      console.log("WalletSelector (onOpenChange): ", { account, connected, wallet, isDialogOpen: isOpen });
+    }}>
       <DialogTrigger asChild>
         <Button>Connect a Wallet</Button>
       </DialogTrigger>
@@ -111,10 +115,13 @@ interface ConnectWalletDialogProps {
 
 function ConnectWalletDialog({ close }: ConnectWalletDialogProps) {
   const { wallets = [] } = useWallet();
+  console.log("ConnectWalletDialog: wallets", wallets);
   const { aptosConnectWallets, availableWallets, installableWallets } =
     groupAndSortWallets(wallets);
+  console.log("ConnectWalletDialog: ", { aptosConnectWallets, availableWallets, installableWallets });
 
   const hasAptosConnectWallets = !!aptosConnectWallets.length;
+  console.log("ConnectWalletDialog: hasAptosConnectWallets", hasAptosConnectWallets)
 
   return (
     <DialogContent className="max-h-screen overflow-auto">
@@ -197,6 +204,7 @@ interface WalletRowProps {
 }
 
 function WalletRow({ wallet, onConnect }: WalletRowProps) {
+  console.log("WalletRow: wallet", wallet);
   return (
     <WalletItem
       wallet={wallet}
@@ -221,6 +229,7 @@ function WalletRow({ wallet, onConnect }: WalletRowProps) {
 }
 
 function AptosConnectWalletRow({ wallet, onConnect }: WalletRowProps) {
+  console.log("AptosConnectWalletRow: wallet", wallet);
   return (
     <WalletItem wallet={wallet} onConnect={onConnect}>
       <WalletItem.ConnectButton asChild>

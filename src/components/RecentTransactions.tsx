@@ -1,4 +1,3 @@
-
 import {
   Table,
   TableBody,
@@ -9,32 +8,57 @@ import {
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getSwaps } from "@/utils/wattswap/viewFunctions";
+import { createSurfClient } from "@thalalabs/surf";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { Aptos, Network, AptosConfig } from "@aptos-labs/ts-sdk";
+import { NETWORK } from "@/constants";
+
+function formatTimestamp(timestamp: string): string {
+  const date = new Date(parseInt(timestamp) * 1000);
+  return date.toLocaleDateString();
+}
+
+function truncateAddress(address: string): string {
+  if (!address) return "";
+  return address.substring(0, 6) + "..." + address.substring(address.length - 4);
+}
 
 export function RecentTransactions() {
+  console.log("RecentTransactions component rendered");
   const [filter, setFilter] = useState("");
-  
-  const transactions = [
-    {
-      id: "1",
-      type: "Send",
-      amount: "45 kWh",
-      recipient: "0x1234...5678",
-      date: "2024-02-20",
-      status: "Completed",
-    },
-    {
-      id: "2",
-      type: "Receive",
-      amount: "30 kWh",
-      recipient: "0x8765...4321",
-      date: "2024-02-19",
-      status: "Pending",
-    },
-  ];
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { account } = useWallet();
 
-  const filteredTransactions = transactions.filter((tx) =>
-    Object.values(tx).some((value) =>
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      setLoading(true);
+      try {
+        if (account && account.address) {
+          const aptosClient = new Aptos(new AptosConfig({
+            network: NETWORK as Network,
+          }));
+          const surfClient = createSurfClient(aptosClient);
+          const swaps = await getSwaps(surfClient, account.address.toString());
+          console.log("Swaps data:", swaps);
+          setTransactions(swaps);
+        } else {
+          console.warn("Wallet not connected or address not found.");
+        }
+      } catch (error) {
+        console.error("Error fetching transactions from getSwaps:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTransactions();
+  }, [account?.address]);
+
+  const filteredTransactions = (transactions || []).filter((tx) =>
+    Object.values(tx || {}).some((value) =>
       value.toString().toLowerCase().includes(filter.toLowerCase())
     )
   );
@@ -42,7 +66,7 @@ export function RecentTransactions() {
   return (
     <Card className="glass-panel p-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-whitesmoke">Recent Transactions</h2>
+        <h2 className="text-2xl font-bold text-whitesmoke">Recent Activity</h2>
         <Input
           placeholder="Filter transactions..."
           value={filter}
@@ -50,30 +74,41 @@ export function RecentTransactions() {
           className="max-w-xs bg-background/50"
         />
       </div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Type</TableHead>
-            <TableHead>Amount</TableHead>
-            <TableHead>Recipient</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Status</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredTransactions.map((tx) => (
-            <TableRow key={tx.id}>
-              <TableCell className={tx.type === "Send" ? "text-negative" : "text-positive"}>
-                {tx.type}
-              </TableCell>
-              <TableCell>{tx.amount}</TableCell>
-              <TableCell>{tx.recipient}</TableCell>
-              <TableCell>{tx.date}</TableCell>
-              <TableCell>{tx.status}</TableCell>
+      {loading ? (
+        <div>Loading transactions...</div>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Type</TableHead>
+              <TableHead>Total Amount</TableHead>
+              <TableHead>Counterparty</TableHead>
+              <TableHead>Status</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {filteredTransactions.map((tx, index) => {
+              const isBuyer = tx.buyers?.includes(account?.address?.toString());
+              const isSeller = tx.seller === account?.address?.toString();
+              const type = isBuyer ? "Buy" : "Sell";
+              const counterparty = isSeller ? truncateAddress(tx.buyers?.[0] || "") : truncateAddress(tx.seller);
+              const status = tx.is_active ? "Active" : "Inactive";
+              const totalAmount = (parseFloat(tx.watt_amount) * parseFloat(tx.apt_price_per_watt)).toFixed(2);
+
+              return (
+                <TableRow key={index}>
+                  <TableCell className={type === "Sell" ? "text-negative" : "text-positive"}>
+                    {type}
+                  </TableCell>
+                  <TableCell>{totalAmount}</TableCell>
+                  <TableCell>{counterparty}</TableCell>
+                  <TableCell>{status}</TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      )}
     </Card>
   );
 }

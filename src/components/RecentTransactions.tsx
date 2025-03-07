@@ -9,51 +9,65 @@ import {
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
-import Identicon from 'react-identicons';
+import Identicon from "react-identicons";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 
 export function RecentTransactions() {
-  const [transactions, setTransactions] = useState<Array<{
-    amount: string;
-    status: string;
-    sender: string;
-    receiver: string;
-  }> | null>(null);
+  const { connected } = useWallet();
+  const [transactions, setTransactions] = useState<
+    Array<{
+      amount: string;
+      status: string;
+      sender: string;
+      receiver: string;
+    }> | null
+  >(null);
   const [filter, setFilter] = useState("");
 
   useEffect(() => {
-    const storedData = localStorage.getItem('cachedTransactions');
-    
+    if (!connected) {
+      setTransactions(null);
+      return;
+    }
+
+    const storedData = localStorage.getItem("cachedTransactions");
+
     if (!storedData) {
       // Generate initial random values with full addresses
       const initialTransactions = Array.from({ length: 3 }).map(() => {
         const amount = (0.000014 + (Math.random() * 0.000003 - 0.0000015))
           .toFixed(7)
-          .replace(/\.?0+$/, '');
+          .replace(/\.?0+$/, "");
 
         return {
-          status: 'Success',
-          sender: '0x2804c8ea1234567890abcdef', // Full sender address
-          receiver: '0x885e174f4abcd12345abcdef', // Full receiver address
-          amount: `${amount} APT`
+          status: "Success",
+          sender: "0x2804c8ea1234567890abcdef", // Full sender address
+          receiver: "0x885e174f4abcd12345abcdef", // Full receiver address
+          amount: `${amount} APT`,
         };
       });
 
-      localStorage.setItem('cachedTransactions', JSON.stringify(initialTransactions));
+      localStorage.setItem(
+        "cachedTransactions",
+        JSON.stringify(initialTransactions)
+      );
       setTransactions(initialTransactions);
     } else {
       setTransactions(JSON.parse(storedData));
     }
-  }, []);
+  }, [connected]); // Reload transactions when wallet state changes
 
   function truncateAddress(address: string): string {
     if (!address) return "";
     return address.substring(0, 6) + "…" + address.substring(address.length - 4);
   }
 
-  if (!transactions) {
+  if (!connected) {
     return (
       <Card className="glass-panel p-6">
-        <div className="text-center py-4">Loading transactions...</div>
+        <div className="text-center py-4 text-gray-400">
+          Connect your wallet to view transactions.
+        </div>
       </Card>
     );
   }
@@ -79,38 +93,36 @@ export function RecentTransactions() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {transactions.map((tx, index) => (
-            <TableRow key={index}>
-              <TableCell>
-                <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded">
-                  {tx.status}
-                </span>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Identicon 
-                    address={tx.sender} 
-                    size={24}
-                    className="rounded-full"
-                  />
-                  <span>{truncateAddress(tx.sender)}</span>
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Identicon 
-                    address={tx.receiver} 
-                    size={24}
-                    className="rounded-full"
-                  />
-                  <span>{truncateAddress(tx.receiver)}</span>
-                </div>
-              </TableCell>
-              <TableCell className="font-mono">
-                {tx.amount}
+          {transactions && transactions.length > 0 ? (
+            transactions.map((tx, index) => (
+              <TableRow key={index}>
+                <TableCell>
+                  <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded">
+                    {tx.status}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Identicon address={tx.sender} size={24} className="rounded-full" />
+                    <span>{truncateAddress(tx.sender)}</span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Identicon address={tx.receiver} size={24} className="rounded-full" />
+                    <span>{truncateAddress(tx.receiver)}</span>
+                  </div>
+                </TableCell>
+                <TableCell className="font-mono">{tx.amount}</TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={4} className="text-center text-gray-400">
+                No transactions found.
               </TableCell>
             </TableRow>
-          ))}
+          )}
         </TableBody>
       </Table>
     </Card>

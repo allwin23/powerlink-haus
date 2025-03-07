@@ -40,6 +40,8 @@ export default {
           DEFAULT: "#FFB400",
           foreground: "#1E1E24",
         },
+        "raisin-black": "#1E1E24",
+        "amber-yellow": "#FFB400",
       },
       fontFamily: {
         orbitron: ["Orbitron", "sans-serif"],

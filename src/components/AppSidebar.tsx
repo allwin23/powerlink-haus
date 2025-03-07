@@ -1,5 +1,5 @@
 
-import { Home, Send, Inbox, Activity, Settings } from "lucide-react";
+import { Home, Send, Inbox, Activity, Settings, SquareActivity } from "lucide-react";
 import { useLocation, Link } from "react-router-dom";
 import {
   Sidebar,
@@ -16,7 +16,8 @@ const menuItems = [
   { title: "Dashboard", icon: Home, path: "/" },
   { title: "Your Listings", icon: Send, path: "/listings" },
   { title: "Marketplace", icon: Inbox, path: "/marketplace" },
-  { title: "Activity", icon: Activity, path: "/activity" },
+  { title: "Analytics", icon: Activity, path: "/analytics" },
+  { title: "Activity", icon: SquareActivity, path: "/activity" },
   { title: "Settings", icon: Settings, path: "/settings" },
 ];
 

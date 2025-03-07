@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound";
 import Activity from "./pages/Activity";
 import Settings from "./pages/Settings";
 import Setup from "./pages/Setup";
+import Analytics from "./pages/Analytics";
 import { AppSidebar } from "./components/AppSidebar";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
                 <Route path="/activity" element={<Activity />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/setup" element={<Setup />} />
+                <Route path="/analytics" element={<Analytics />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>

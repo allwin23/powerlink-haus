@@ -14,8 +14,8 @@ import {
 
 const menuItems = [
   { title: "Dashboard", icon: Home, path: "/" },
-  { title: "Send Power", icon: Send, path: "/send" },
-  { title: "Receive Power", icon: Inbox, path: "/receive" },
+  { title: "Your Listings", icon: Send, path: "/listing" },
+  { title: "Marketplace", icon: Inbox, path: "/marketplace" },
   { title: "Activity", icon: Activity, path: "/activity" },
   { title: "Settings", icon: Settings, path: "/settings" },
 ];
@@ -27,7 +27,7 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarContent>
         <div className="p-6">
-          <h1 className="text-2xl font-orbitron font-bold text-primary">PowerLink</h1>
+          <h1 className="text-2xl font-orbitron font-bold text-primary">WattSwap</h1>
         </div>
         <SidebarGroup>
           <SidebarGroupContent>

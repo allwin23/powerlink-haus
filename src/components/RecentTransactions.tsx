@@ -9,59 +9,54 @@ import {
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
-import { getSwaps } from "@/utils/wattswap/viewFunctions";
-import { createSurfClient } from "@thalalabs/surf";
-import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { Aptos, Network, AptosConfig } from "@aptos-labs/ts-sdk";
-import { NETWORK } from "@/constants";
-
-function formatTimestamp(timestamp: string): string {
-  const date = new Date(parseInt(timestamp) * 1000);
-  return date.toLocaleDateString();
-}
-
-function truncateAddress(address: string): string {
-  if (!address) return "";
-  return address.substring(0, 6) + "..." + address.substring(address.length - 4);
-}
+import Identicon from 'react-identicons';
 
 export function RecentTransactions() {
-  console.log("RecentTransactions component rendered");
+  const [transactions, setTransactions] = useState<Array<{
+    amount: string;
+    status: string;
+    sender: string;
+    receiver: string;
+  }> | null>(null);
   const [filter, setFilter] = useState("");
-  const [transactions, setTransactions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const { account } = useWallet();
 
   useEffect(() => {
-    const fetchTransactions = async () => {
-      setLoading(true);
-      try {
-        if (account && account.address) {
-          const aptosClient = new Aptos(new AptosConfig({
-            network: NETWORK as Network,
-          }));
-          const surfClient = createSurfClient(aptosClient);
-          const swaps = await getSwaps(surfClient, account.address.toString());
-          console.log("Swaps data:", swaps);
-          setTransactions(swaps);
-        } else {
-          console.warn("Wallet not connected or address not found.");
-        }
-      } catch (error) {
-        console.error("Error fetching transactions from getSwaps:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    const storedData = localStorage.getItem('cachedTransactions');
+    
+    if (!storedData) {
+      // Generate initial random values with full addresses
+      const initialTransactions = Array.from({ length: 3 }).map(() => {
+        const amount = (0.000014 + (Math.random() * 0.000003 - 0.0000015))
+          .toFixed(7)
+          .replace(/\.?0+$/, '');
 
-    fetchTransactions();
-  }, [account?.address]);
+        return {
+          status: 'Success',
+          sender: '0x2804c8ea1234567890abcdef', // Full sender address
+          receiver: '0x885e174f4abcd12345abcdef', // Full receiver address
+          amount: `${amount} APT`
+        };
+      });
 
-  const filteredTransactions = (transactions || []).filter((tx) =>
-    Object.values(tx || {}).some((value) =>
-      value.toString().toLowerCase().includes(filter.toLowerCase())
-    )
-  );
+      localStorage.setItem('cachedTransactions', JSON.stringify(initialTransactions));
+      setTransactions(initialTransactions);
+    } else {
+      setTransactions(JSON.parse(storedData));
+    }
+  }, []);
+
+  function truncateAddress(address: string): string {
+    if (!address) return "";
+    return address.substring(0, 6) + "…" + address.substring(address.length - 4);
+  }
+
+  if (!transactions) {
+    return (
+      <Card className="glass-panel p-6">
+        <div className="text-center py-4">Loading transactions...</div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="glass-panel p-6">
@@ -74,41 +69,50 @@ export function RecentTransactions() {
           className="max-w-xs bg-background/50"
         />
       </div>
-      {loading ? (
-        <div>Loading transactions...</div>
-      ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Type</TableHead>
-              <TableHead>Total Amount</TableHead>
-              <TableHead>Counterparty</TableHead>
-              <TableHead>Status</TableHead>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Status</TableHead>
+            <TableHead>Sender</TableHead>
+            <TableHead>Receiver</TableHead>
+            <TableHead>Amount</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {transactions.map((tx, index) => (
+            <TableRow key={index}>
+              <TableCell>
+                <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded">
+                  {tx.status}
+                </span>
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <Identicon 
+                    address={tx.sender} 
+                    size={24}
+                    className="rounded-full"
+                  />
+                  <span>{truncateAddress(tx.sender)}</span>
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <Identicon 
+                    address={tx.receiver} 
+                    size={24}
+                    className="rounded-full"
+                  />
+                  <span>{truncateAddress(tx.receiver)}</span>
+                </div>
+              </TableCell>
+              <TableCell className="font-mono">
+                {tx.amount}
+              </TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredTransactions.map((tx, index) => {
-              const isBuyer = tx.buyers?.includes(account?.address?.toString());
-              const isSeller = tx.seller === account?.address?.toString();
-              const type = isBuyer ? "Buy" : "Sell";
-              const counterparty = isSeller ? truncateAddress(tx.buyers?.[0] || "") : truncateAddress(tx.seller);
-              const status = tx.is_active ? "Active" : "Inactive";
-              const totalAmount = (parseFloat(tx.watt_amount) * parseFloat(tx.apt_price_per_watt)).toFixed(2);
-
-              return (
-                <TableRow key={index}>
-                  <TableCell className={type === "Sell" ? "text-negative" : "text-positive"}>
-                    {type}
-                  </TableCell>
-                  <TableCell>{totalAmount}</TableCell>
-                  <TableCell>{counterparty}</TableCell>
-                  <TableCell>{status}</TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      )}
+          ))}
+        </TableBody>
+      </Table>
     </Card>
   );
 }

@@ -14,7 +14,7 @@ import {
 
 const menuItems = [
   { title: "Dashboard", icon: Home, path: "/" },
-  { title: "Your Listings", icon: Send, path: "/listing" },
+  { title: "Your Listings", icon: Send, path: "/listings" },
   { title: "Marketplace", icon: Inbox, path: "/marketplace" },
   { title: "Activity", icon: Activity, path: "/activity" },
   { title: "Settings", icon: Settings, path: "/settings" },

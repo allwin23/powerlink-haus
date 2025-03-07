@@ -1,5 +1,5 @@
 
-import { MorphingDialog, MorphingDialogTrigger, MorphingDialogContent, MorphingDialogTitle, MorphingDialogImage, MorphingDialogSubtitle, MorphingDialogClose, MorphingDialogDescription, MorphingDialogContainer } from "../components/ui/MorphingDialog";
+import { MorphingDialog, MorphingDialogTrigger, MorphingDialogContent, MorphingDialogTitle, MorphingDialogSubtitle, MorphingDialogClose, MorphingDialogDescription, MorphingDialogContainer } from "../components/ui/MorphingDialog";
 import { AnimatedGroup } from "../components/ui/AnimatedGroup";
 import { Spotlight } from "../components/core/Spotlight";
 
@@ -12,9 +12,9 @@ interface EnergyListing {
 }
 
 const listings: EnergyListing[] = [
-  { seller: "0x3a1f8e...", amount: 15, price: 15, minPurchase: 1, maxPurchase: 10 },
-  { seller: "0x9e2f3a...", amount: 5, price: 4, minPurchase: 1, maxPurchase: 5 },
-  { seller: "0xf5a2b3...", amount: 75, price: 67, minPurchase: 10, maxPurchase: 50 },
+  { seller: "0x885e106...", amount: 100, price: 1, minPurchase: 2, maxPurchase: 90 },
+  { seller: "0x885e106...", amount: 150, price: 2, minPurchase: 10, maxPurchase: 140 },
+  { seller: "0x885e106...", amount: 50, price: 3, minPurchase: 1, maxPurchase: 40 },
 ];
 
 export default function Marketplace() {
